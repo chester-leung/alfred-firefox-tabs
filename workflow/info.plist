@@ -174,7 +174,7 @@ https://github.com/chester-leung/alfred-firefox-tabs</string>
 	<key>variablesdontexport</key>
 	<array/>
 	<key>version</key>
-	<string>1.0</string>
+	<string>2.0-dirty</string>
 	<key>webaddress</key>
 	<string>https://github.com/chester-leung/alfred-firefox-tabs</string>
 </dict>

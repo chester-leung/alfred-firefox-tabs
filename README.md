@@ -52,7 +52,8 @@ cd alfred-firefox-tabs
 ```
 
 `./build.sh` alone just produces `dist/Firefox-Tabs.alfredworkflow`, which you can
-double-click to import.
+double-click to import. Releases are built by GitHub Actions when a `v*` tag
+is pushed (see `CLAUDE.md`).
 
 ### Grant Accessibility permission
 

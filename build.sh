@@ -2,8 +2,10 @@
 # Builds Firefox Tabs into dist/Firefox-Tabs.alfredworkflow.
 #   ./build.sh           build and package
 #   ./build.sh install   also copy straight into Alfred's preferences
+# VERSION (e.g. 2.1.0) sets the workflow version; CI passes it from the tag.
 set -e
 cd "$(dirname "$0")"
+export VERSION="${VERSION:-$(git describe --tags --always --dirty 2>/dev/null | sed 's/^v//')}"
 mkdir -p build workflow dist
 swiftc -O -target arm64-apple-macos12 fftabs.swift -o build/fftabs-arm64
 swiftc -O -target x86_64-apple-macos12 fftabs.swift -o build/fftabs-x86_64

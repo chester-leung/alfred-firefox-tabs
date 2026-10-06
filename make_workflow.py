@@ -1,4 +1,5 @@
 """Writes workflow/info.plist for the Firefox Tabs Alfred workflow."""
+import os
 import plistlib
 
 SF, RUN, COPY = "A1F0F1AB-0001-4000-8000-000000000001", "A1F0F1AB-0002-4000-8000-000000000002", "A1F0F1AB-0003-4000-8000-000000000003"
@@ -13,7 +14,7 @@ info = {
     "readme": "`ff` searches open tabs and bookmarks (★). ↩ switches to the tab or opens the bookmark; ⌘↩ copies the URL. Filter by title, URL, host, port or folder; add `tab` or `bookmark` to narrow. Change the keyword via the `keyword` workflow variable.\n\nhttps://github.com/chester-leung/alfred-firefox-tabs",
     "webaddress": "https://github.com/chester-leung/alfred-firefox-tabs",
     "disabled": False,
-    "version": "1.0",
+    "version": os.environ.get("VERSION", "dev"),
     "objects": [
         {"uid": SF, "type": "alfred.workflow.input.scriptfilter", "version": 3, "config": {
             "keyword": "{var:keyword}", "withspace": True, "argumenttype": 1, "argumenttrimmode": 0,
