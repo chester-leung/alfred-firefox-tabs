@@ -11,13 +11,13 @@ info = {
     "description": "Search open Firefox tabs and bookmarks",
     "createdby": "Chester Leung",
     "category": "Internet",
-    "readme": "`t` searches open tabs (↩ switches to the tab). `b` searches bookmarks (↩ opens it in Firefox). Filter by title, URL, host or port; ⌘↩ copies the URL.\n\nhttps://github.com/chester-leung/alfred-firefox-tabs",
+    "readme": "`t` searches open tabs (↩ switches to the tab). `bm` searches bookmarks (↩ opens it in Firefox). Filter by title, URL, host or port; ⌘↩ copies the URL. Change keywords via the tabs_keyword / bookmarks_keyword workflow variables.\n\nhttps://github.com/chester-leung/alfred-firefox-tabs",
     "webaddress": "https://github.com/chester-leung/alfred-firefox-tabs",
     "disabled": False,
     "version": "1.0",
     "objects": [
         {"uid": SF, "type": "alfred.workflow.input.scriptfilter", "version": 3, "config": {
-            "keyword": "t", "withspace": True, "argumenttype": 1, "argumenttrimmode": 0,
+            "keyword": "{var:tabs_keyword}", "withspace": True, "argumenttype": 1, "argumenttrimmode": 0,
             "argumenttreatemptyqueryasnil": True,
             "title": "Search Firefox tabs", "subtext": "", "runningsubtext": "Reading tabs…",
             "type": 0, "script": "./fftabs list", "scriptfile": "", "scriptargtype": 1, "escaping": 102,
@@ -29,7 +29,7 @@ info = {
             "script": 'case "$1" in\n  x-apple*) open "$1" ;;\n  *) ./fftabs focus "$1" ;;\nesac',
         }},
         {"uid": BSF, "type": "alfred.workflow.input.scriptfilter", "version": 3, "config": {
-            "keyword": "b", "withspace": True, "argumenttype": 1, "argumenttrimmode": 0,
+            "keyword": "{var:bookmarks_keyword}", "withspace": True, "argumenttype": 1, "argumenttrimmode": 0,
             "argumenttreatemptyqueryasnil": True,
             "title": "Search Firefox bookmarks", "subtext": "", "runningsubtext": "Reading bookmarks…",
             "type": 0, "script": "./fftabs bookmarks", "scriptfile": "", "scriptargtype": 1, "escaping": 102,
@@ -56,6 +56,7 @@ info = {
     },
     "uidata": {SF: {"xpos": 50, "ypos": 50}, RUN: {"xpos": 300, "ypos": 20}, COPY: {"xpos": 300, "ypos": 150},
                BSF: {"xpos": 50, "ypos": 250}, BOPEN: {"xpos": 300, "ypos": 280}},
+    "variables": {"tabs_keyword": "t", "bookmarks_keyword": "bm"},
     "variablesdontexport": [],
 }
 with open("workflow/info.plist", "wb") as f:

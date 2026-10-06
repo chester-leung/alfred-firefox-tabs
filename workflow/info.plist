@@ -81,7 +81,7 @@
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>keyword</key>
-				<string>t</string>
+				<string>{var:tabs_keyword}</string>
 				<key>queuedelaycustom</key>
 				<integer>3</integer>
 				<key>queuedelayimmediatelyinitially</key>
@@ -156,7 +156,7 @@ esac</string>
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>keyword</key>
-				<string>b</string>
+				<string>{var:bookmarks_keyword}</string>
 				<key>queuedelaycustom</key>
 				<integer>3</integer>
 				<key>queuedelayimmediatelyinitially</key>
@@ -233,7 +233,7 @@ esac</string>
 		</dict>
 	</array>
 	<key>readme</key>
-	<string>`t` searches open tabs (↩ switches to the tab). `b` searches bookmarks (↩ opens it in Firefox). Filter by title, URL, host or port; ⌘↩ copies the URL.
+	<string>`t` searches open tabs (↩ switches to the tab). `bm` searches bookmarks (↩ opens it in Firefox). Filter by title, URL, host or port; ⌘↩ copies the URL. Change keywords via the tabs_keyword / bookmarks_keyword workflow variables.
 
 https://github.com/chester-leung/alfred-firefox-tabs</string>
 	<key>uidata</key>
@@ -273,6 +273,13 @@ https://github.com/chester-leung/alfred-firefox-tabs</string>
 			<key>ypos</key>
 			<integer>280</integer>
 		</dict>
+	</dict>
+	<key>variables</key>
+	<dict>
+		<key>bookmarks_keyword</key>
+		<string>bm</string>
+		<key>tabs_keyword</key>
+		<string>t</string>
 	</dict>
 	<key>variablesdontexport</key>
 	<array/>

@@ -3,14 +3,14 @@
 Search your open Firefox tabs and bookmarks from Alfred.
 
 - **`t`** lists every open tab. Pick one and Firefox comes to the front on that tab.
-- **`b`** lists every bookmark. Pick one and it opens in Firefox.
+- **`bm`** lists every bookmark. Pick one and it opens in Firefox.
 
 Keep typing to filter by title, URL, host or port (`t gmail`, `t localhost:3000`,
-`t 3000`). Bookmarks can also be filtered by folder name (`b toolbar`).
+`t 3000`). Bookmarks can also be filtered by folder name (`bm toolbar`).
 
 | Key | Action |
 | --- | --- |
-| ↩ | `t`: switch to the tab · `b`: open the bookmark |
+| ↩ | `t`: switch to the tab · `bm`: open the bookmark |
 | ⌘↩ | Copy the URL |
 | ⇧ / ⌘Y | Quick Look the page |
 
@@ -63,8 +63,8 @@ opens that settings pane for you.
 
 ### Changing the keywords
 
-To change `t` or `b`, open the workflow in Alfred Preferences and double-click
-the matching Script Filter.
+Open the workflow in Alfred Preferences, click the **[𝑥]** (variables) button,
+and edit `tabs_keyword` (default `t`) or `bookmarks_keyword` (default `bm`).
 
 ## How it works
 
