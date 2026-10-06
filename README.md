@@ -1,16 +1,16 @@
 # Firefox Tabs for Alfred
 
-Search your open Firefox tabs and bookmarks from Alfred.
+Search your open Firefox tabs and bookmarks from Alfred with one keyword.
 
-- **`t`** lists every open tab. Pick one and Firefox comes to the front on that tab.
-- **`bm`** lists every bookmark. Pick one and it opens in Firefox.
-
-Keep typing to filter by title, URL, host or port (`t gmail`, `t localhost:3000`,
-`t 3000`). Bookmarks can also be filtered by folder name (`bm toolbar`).
+Type **`ff`** and everything is listed: open tabs first, then bookmarks (marked
+★). Keep typing to filter by title, URL, host, port or bookmark folder
+(`ff gmail`, `ff localhost:3000`, `ff 3000`, `ff toolbar`). Add `tab` or
+`bookmark` to the query to narrow to one kind (`ff jira bookmark`). Bookmarks
+already open in a tab are skipped, since picking the tab gets you there.
 
 | Key | Action |
 | --- | --- |
-| ↩ | `t`: switch to the tab · `bm`: open the bookmark |
+| ↩ | Tab: switch to it and bring Firefox to the front · Bookmark: open it in Firefox |
 | ⌘↩ | Copy the URL |
 | ⇧ / ⌘Y | Quick Look the page |
 
@@ -56,15 +56,15 @@ double-click to import.
 
 ### Grant Accessibility permission
 
-Needed for `t` (bookmarks work without it). The workflow reads and clicks Firefox's tabs through the macOS Accessibility
+Needed for tabs (bookmarks are listed without it). The workflow reads and clicks Firefox's tabs through the macOS Accessibility
 API, so Alfred needs that permission: **System Settings → Privacy & Security →
-Accessibility → enable Alfred**. If it's missing, typing `t` shows an item that
-opens that settings pane for you.
+Accessibility → enable Alfred**. If it's missing, `ff` shows an item that opens
+that settings pane for you.
 
-### Changing the keywords
+### Changing the keyword
 
 Open the workflow in Alfred Preferences, click the **[𝑥]** (variables) button,
-and edit `tabs_keyword` (default `t`) or `bookmarks_keyword` (default `bm`).
+and edit `keyword` (default `ff`).
 
 ## How it works
 

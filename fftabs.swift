@@ -1,8 +1,7 @@
 // fftabs — list and switch Firefox tabs for Alfred.
 //
-//   fftabs list            Alfred Script Filter JSON of every open tab
+//   fftabs search          Alfred Script Filter JSON: open tabs, then bookmarks
 //   fftabs focus <arg>     bring the tab identified by <arg> to the front
-//   fftabs bookmarks       Alfred Script Filter JSON of every bookmark
 //
 // Tabs are read live via the Accessibility API (covers every running Firefox
 // profile). URLs come from each profile's session file, matched by window and
@@ -162,20 +161,16 @@ func emit(_ obj: Any) {
     FileHandle.standardOutput.write(data)
 }
 
-func list() {
+/// Alfred items for every open tab, plus the set of their URLs.
+func tabItems() -> (items: [[String: Any]], urls: Set<String>) {
     guard AXIsProcessTrusted() else {
-        emit(["items": [[
-            "title": "Alfred needs Accessibility permission",
+        return ([[
+            "title": "Alfred needs Accessibility permission to list tabs",
             "subtitle": "System Settings → Privacy & Security → Accessibility → enable Alfred",
             "arg": "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility",
-        ]]])
-        return
+        ]], [])
     }
     let tabs = allTabs()
-    if tabs.isEmpty {
-        emit(["items": [["title": "No Firefox tabs found", "subtitle": "Is Firefox running?", "valid": false]]])
-        return
-    }
     let urls = urlsFor(tabs)
     let windowKeys = tabs.map { "\($0.pid):\($0.window)" }.reduce(into: [String]()) { if !$0.contains($1) { $0.append($1) } }
     let items: [[String: Any]] = zip(tabs, urls).map { t, url in
@@ -190,18 +185,18 @@ func list() {
                                   "title": t.title, "windowTitle": t.windowTitle]
         let argStr = String(data: try! JSONSerialization.data(withJSONObject: arg), encoding: .utf8)!
         return [
-            "uid": url.isEmpty ? t.title : url,
+            "uid": "tab:" + (url.isEmpty ? t.title : url),
             "title": (t.selected ? "● " : "") + t.title,
             "subtitle": subtitle,
             "arg": argStr,
-            "match": "\(t.title) \(url) \(host)\(port) \(host) \(port.dropFirst())",
+            "match": "\(t.title) \(url) \(host)\(port) \(host) \(port.dropFirst()) tab",
             "autocomplete": t.title,
             "quicklookurl": url,
             "text": ["copy": url, "largetype": url.isEmpty ? t.title : url],
             "mods": ["cmd": ["subtitle": "Copy URL: \(url)", "arg": url, "valid": !url.isEmpty]],
         ]
     }
-    emit(["items": items])
+    return (items, Set(urls))
 }
 
 func focus(_ argStr: String) {
@@ -320,43 +315,48 @@ func allBookmarks() -> [Bookmark] {
     return result
 }
 
-func bookmarks() {
+/// Alfred items for every bookmark whose URL isn't already open in a tab.
+func bookmarkItems(skipping open: Set<String>) -> [[String: Any]] {
     let all = allBookmarks()
-    if all.isEmpty {
-        emit(["items": [["title": "No Firefox bookmarks found", "valid": false]]])
-        return
-    }
     let multiProfile = Set(all.map(\.profile)).count > 1
-    var seen = Set<String>()
-    let items: [[String: Any]] = all.compactMap { b in
+    var seen = open
+    return all.compactMap { b in
         guard seen.insert(b.url).inserted else { return nil }
         let host = URL(string: b.url)?.host ?? ""
         let port = URL(string: b.url)?.port.map(String.init) ?? ""
         var location = b.folder
         if multiProfile { location = "\(b.profile) · " + location }
         return [
-            "uid": b.url,
+            "uid": "bookmark:" + b.url,
             "title": b.title,
-            "subtitle": "\(location) · \(b.url)",
+            "subtitle": "★ \(location) · \(b.url)",
             "arg": b.url,
-            "match": "\(b.title) \(b.url) \(host) \(port) \(b.folder)",
+            "match": "\(b.title) \(b.url) \(host) \(port) \(b.folder) bookmark",
             "autocomplete": b.title,
             "quicklookurl": b.url,
             "text": ["copy": b.url, "largetype": b.url],
             "mods": ["cmd": ["subtitle": "Copy URL: \(b.url)", "arg": b.url]],
         ]
     }
+}
+
+/// Open tabs first, then bookmarks.
+func search() {
+    let tabs = tabItems()
+    var items = tabs.items + bookmarkItems(skipping: tabs.urls)
+    if items.isEmpty {
+        items = [["title": "No Firefox tabs or bookmarks found", "valid": false]]
+    }
     emit(["items": items])
 }
 
 let args = CommandLine.arguments
 switch args.count > 1 ? args[1] : "" {
-case "list": list()
+case "search": search()
 case "focus" where args.count > 2: focus(args[2])
-case "bookmarks": bookmarks()
 case "urls":  // debugging: dump session URLs without needing Accessibility
     emit(sessionWindows().map { $0.map { ["title": $0.title, "url": $0.url] } })
 default:
-    FileHandle.standardError.write("usage: fftabs list | focus <arg> | bookmarks | urls\n".data(using: .utf8)!)
+    FileHandle.standardError.write("usage: fftabs search | focus <arg> | urls\n".data(using: .utf8)!)
     exit(2)
 }
