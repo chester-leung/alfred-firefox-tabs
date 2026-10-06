@@ -1,23 +1,93 @@
 # Firefox Tabs for Alfred
 
-Type `t` in Alfred to see every open Firefox tab (all windows, all running
-profiles, horizontal or vertical tabs). Type to filter by title, URL, host or
-port (e.g. `t 3000`). ↩ switches to the tab and brings Firefox forward;
-⌘↩ copies the tab's URL.
+Search your open Firefox tabs from Alfred and jump straight to one.
+
+Open Alfred, type `t`, and every open tab is listed. Keep typing to filter by
+title, URL, host or port (`t gmail`, `t localhost:3000`, `t 3000`).
+
+| Key | Action |
+| --- | --- |
+| ↩ | Switch to the tab and bring Firefox to the front |
+| ⌘↩ | Copy the tab's URL |
+| ⇧ / ⌘Y | Quick Look the page |
+
+Works with horizontal and vertical tabs, multiple windows, and multiple Firefox
+profiles running at once. No Firefox extension needed.
+
+## Requirements
+
+- macOS 12 or later (Apple Silicon or Intel)
+- [Alfred](https://www.alfredapp.com) 4 or 5 with the Powerpack (needed for workflows)
+- Firefox (release, Developer Edition or Nightly)
+
+## Install
+
+### Option A: download the release
+
+1. Download `Firefox-Tabs.alfredworkflow` from the
+   [latest release](https://github.com/chester-leung/alfred-firefox-tabs/releases/latest).
+2. Double-click it, and Alfred imports the workflow.
+3. Downloaded files are quarantined by macOS, and the helper binary isn't
+   notarized, so clear the quarantine flag once. In Alfred Preferences →
+   Workflows, right-click **Firefox Tabs** → *Open in Finder*, then in Terminal run:
+
+   ```sh
+   xattr -dr com.apple.quarantine "<that folder>"
+   ```
+
+   (Or build from source, Option B, which avoids this step.)
+
+### Option B: build from source
+
+Needs the Xcode Command Line Tools (`xcode-select --install`).
+
+```sh
+git clone https://github.com/chester-leung/alfred-firefox-tabs.git
+cd alfred-firefox-tabs
+./build.sh install
+```
+
+`./build.sh` alone just produces `dist/Firefox-Tabs.alfredworkflow`, which you can
+double-click to import.
+
+### Grant Accessibility permission
+
+The workflow reads and clicks Firefox's tabs through the macOS Accessibility
+API, so Alfred needs that permission: **System Settings → Privacy & Security →
+Accessibility → enable Alfred**. If it's missing, typing `t` shows an item that
+opens that settings pane for you.
+
+### Changing the keyword
+
+`t` is the default. To change it, open the workflow in Alfred Preferences and
+double-click the Script Filter.
 
 ## How it works
 
-`fftabs` (Swift) reads the live tab list from Firefox's Accessibility tree and
-selects tabs by pressing them there, so no Firefox extension is needed. URLs
-come from each profile's `sessionstore-backups/recovery.jsonlz4`, which Firefox
-rewrites every ~15s, so a brand-new tab may briefly show no URL.
+`fftabs` is a small Swift program the workflow calls:
 
-Requires Alfred to have Accessibility permission. Tabs aren't visible while a
-window is in fullscreen video mode, because Firefox hides its tab strip then.
+- **Listing:** it walks each Firefox window's Accessibility tree for tab
+  buttons (`AXRadioButton` / `AXTabButton`). This is live and fast (~0.15s) and
+  sees every running Firefox instance, so all profiles are covered.
+- **URLs:** Firefox doesn't expose URLs through Accessibility, so they're read
+  from each profile's session file
+  (`~/Library/Application Support/Firefox/Profiles/*/sessionstore-backups/recovery.jsonlz4`,
+  Mozilla's LZ4 variant, decoded in-process) and matched to the live tabs by
+  window and position.
+- **Switching:** it presses the tab's button, raises its window and activates
+  Firefox.
 
-## Build / install
+Nothing leaves your machine: no network access, no extension, no data stored.
 
-    ./build.sh
+## Limitations
 
-Compiles a universal binary, regenerates `info.plist` from
-`make_workflow.py`, and copies the workflow into Alfred's synced preferences.
+- Firefox rewrites the session file every ~15 seconds, so a brand-new tab can
+  briefly show no URL. You can still switch to it; it just can't be searched by
+  URL until the next save.
+- While a window is in fullscreen video, Firefox hides its tab strip, so that
+  window's tabs don't appear.
+- Tabs inside a collapsed tab group may not be listed until the group is expanded.
+
+## License
+
+MIT

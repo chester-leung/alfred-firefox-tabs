@@ -10,8 +10,8 @@ info = {
     "description": "Search open Firefox tabs and switch to one",
     "createdby": "Chester Leung",
     "category": "Internet",
-    "readme": "Type `t` then part of a tab title or URL (e.g. `t 3000`). ↩ switches to the tab, ⌘↩ copies its URL.\n\nSource: ~/repos/alfred-firefox-tabs",
-    "webaddress": "",
+    "readme": "Type `t` then part of a tab title or URL (e.g. `t 3000`). ↩ switches to the tab, ⌘↩ copies its URL.\n\nhttps://github.com/chester-leung/alfred-firefox-tabs",
+    "webaddress": "https://github.com/chester-leung/alfred-firefox-tabs",
     "disabled": False,
     "version": "1.0",
     "objects": [
