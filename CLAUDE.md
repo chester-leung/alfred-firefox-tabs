@@ -9,7 +9,7 @@ tab) and bookmarks (↩ opens them). See README.md for user-facing behaviour.
   Filter JSON (tabs, then bookmarks); `fftabs focus <json>` switches to a tab;
   `fftabs urls` dumps session-file URLs for debugging.
 - `make_workflow.py`: generates `workflow/info.plist`. Edit this, never the
-  plist (the plist is regenerated on every build).
+  plist. Everything in `workflow/` is a build output and gitignored.
 - `build.sh`: compiles a universal binary into `workflow/`, writes the plist,
   zips `dist/Firefox-Tabs.alfredworkflow`. `./build.sh install` also copies
   the workflow into the local Alfred preferences for testing.
