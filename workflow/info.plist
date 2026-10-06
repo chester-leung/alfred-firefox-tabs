@@ -31,11 +31,34 @@
 				<false/>
 			</dict>
 		</array>
+		<key>A1F0F1AB-0004-4000-8000-000000000004</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>A1F0F1AB-0005-4000-8000-000000000005</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+			<dict>
+				<key>destinationuid</key>
+				<string>A1F0F1AB-0003-4000-8000-000000000003</string>
+				<key>modifiers</key>
+				<integer>1048576</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
 	</dict>
 	<key>createdby</key>
 	<string>Chester Leung</string>
 	<key>description</key>
-	<string>Search open Firefox tabs and switch to one</string>
+	<string>Search open Firefox tabs and bookmarks</string>
 	<key>disabled</key>
 	<false/>
 	<key>name</key>
@@ -120,6 +143,78 @@ esac</string>
 		<dict>
 			<key>config</key>
 			<dict>
+				<key>alfredfiltersresults</key>
+				<true/>
+				<key>alfredfiltersresultsmatchmode</key>
+				<integer>0</integer>
+				<key>argumenttreatemptyqueryasnil</key>
+				<true/>
+				<key>argumenttrimmode</key>
+				<integer>0</integer>
+				<key>argumenttype</key>
+				<integer>1</integer>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>keyword</key>
+				<string>b</string>
+				<key>queuedelaycustom</key>
+				<integer>3</integer>
+				<key>queuedelayimmediatelyinitially</key>
+				<true/>
+				<key>queuedelaymode</key>
+				<integer>0</integer>
+				<key>queuemode</key>
+				<integer>1</integer>
+				<key>runningsubtext</key>
+				<string>Reading bookmarks…</string>
+				<key>script</key>
+				<string>./fftabs bookmarks</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>subtext</key>
+				<string></string>
+				<key>title</key>
+				<string>Search Firefox bookmarks</string>
+				<key>type</key>
+				<integer>0</integer>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.scriptfilter</string>
+			<key>uid</key>
+			<string>A1F0F1AB-0004-4000-8000-000000000004</string>
+			<key>version</key>
+			<integer>3</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>script</key>
+				<string>open -b org.mozilla.firefox "$1"</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>type</key>
+				<integer>0</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>A1F0F1AB-0005-4000-8000-000000000005</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
 				<key>autopaste</key>
 				<false/>
 				<key>clipboardtext</key>
@@ -138,7 +233,7 @@ esac</string>
 		</dict>
 	</array>
 	<key>readme</key>
-	<string>Type `t` then part of a tab title or URL (e.g. `t 3000`). ↩ switches to the tab, ⌘↩ copies its URL.
+	<string>`t` searches open tabs (↩ switches to the tab). `b` searches bookmarks (↩ opens it in Firefox). Filter by title, URL, host or port; ⌘↩ copies the URL.
 
 https://github.com/chester-leung/alfred-firefox-tabs</string>
 	<key>uidata</key>
@@ -163,6 +258,20 @@ https://github.com/chester-leung/alfred-firefox-tabs</string>
 			<integer>300</integer>
 			<key>ypos</key>
 			<integer>150</integer>
+		</dict>
+		<key>A1F0F1AB-0004-4000-8000-000000000004</key>
+		<dict>
+			<key>xpos</key>
+			<integer>50</integer>
+			<key>ypos</key>
+			<integer>250</integer>
+		</dict>
+		<key>A1F0F1AB-0005-4000-8000-000000000005</key>
+		<dict>
+			<key>xpos</key>
+			<integer>300</integer>
+			<key>ypos</key>
+			<integer>280</integer>
 		</dict>
 	</dict>
 	<key>variablesdontexport</key>

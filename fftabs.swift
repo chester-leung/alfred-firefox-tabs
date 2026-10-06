@@ -2,11 +2,14 @@
 //
 //   fftabs list            Alfred Script Filter JSON of every open tab
 //   fftabs focus <arg>     bring the tab identified by <arg> to the front
+//   fftabs bookmarks       Alfred Script Filter JSON of every bookmark
 //
 // Tabs are read live via the Accessibility API (covers every running Firefox
-// profile). URLs come from each profile's session file, matched by title.
+// profile). URLs come from each profile's session file, matched by window and
+// position. Bookmarks come from each profile's places.sqlite.
 
 import Cocoa
+import SQLite3
 
 let firefoxBundleIDs: Set<String> = [
     "org.mozilla.firefox", "org.mozilla.firefoxdeveloperedition", "org.mozilla.nightly",
@@ -224,13 +227,136 @@ func focus(_ argStr: String) {
     NSRunningApplication(processIdentifier: pid_t(pid))?.activate()
 }
 
+// MARK: - Bookmarks
+
+let profilesDir = FileManager.default.homeDirectoryForCurrentUser
+    .appendingPathComponent("Library/Application Support/Firefox/Profiles")
+
+/// Profile directory name -> display name, from profiles.ini.
+func profileNames() -> [String: String] {
+    let ini = profilesDir.deletingLastPathComponent().appendingPathComponent("profiles.ini")
+    guard let text = try? String(contentsOf: ini, encoding: .utf8) else { return [:] }
+    var names: [String: String] = [:]
+    var name: String?
+    for line in text.split(whereSeparator: \.isNewline) {
+        if line.hasPrefix("[") { name = nil }
+        else if line.hasPrefix("Name=") { name = String(line.dropFirst(5)) }
+        else if line.hasPrefix("Path="), let n = name {
+            names[(String(line.dropFirst(5)) as NSString).lastPathComponent] = n
+        }
+    }
+    return names
+}
+
+struct Bookmark { let title: String; let url: String; let folder: String; let profile: String }
+
+/// Reads bookmarks from every profile, most-used (frecency) first. Firefox holds
+/// an exclusive lock on places.sqlite, so we query a clone of it plus its WAL
+/// (an instant copy-on-write on APFS) to see changes made seconds ago.
+func allBookmarks() -> [Bookmark] {
+    let fm = FileManager.default
+    let names = profileNames()
+    var result: [Bookmark] = []
+    for dir in (try? fm.contentsOfDirectory(at: profilesDir, includingPropertiesForKeys: nil)) ?? [] {
+        let db = dir.appendingPathComponent("places.sqlite")
+        guard fm.fileExists(atPath: db.path) else { continue }
+        let tmp = fm.temporaryDirectory.appendingPathComponent("fftabs-\(UUID().uuidString)")
+        defer { try? fm.removeItem(at: tmp) }
+        do {
+            try fm.createDirectory(at: tmp, withIntermediateDirectories: true)
+            try fm.copyItem(at: db, to: tmp.appendingPathComponent("places.sqlite"))
+            let wal = dir.appendingPathComponent("places.sqlite-wal")
+            if fm.fileExists(atPath: wal.path) {
+                try fm.copyItem(at: wal, to: tmp.appendingPathComponent("places.sqlite-wal"))
+            }
+        } catch { continue }
+
+        var conn: OpaquePointer?
+        guard sqlite3_open(tmp.appendingPathComponent("places.sqlite").path, &conn) == SQLITE_OK else { continue }
+        defer { sqlite3_close(conn) }
+
+        func rows(_ sql: String, _ each: (OpaquePointer) -> Void) {
+            var stmt: OpaquePointer?
+            guard sqlite3_prepare_v2(conn, sql, -1, &stmt, nil) == SQLITE_OK, let stmt else { return }
+            defer { sqlite3_finalize(stmt) }
+            while sqlite3_step(stmt) == SQLITE_ROW { each(stmt) }
+        }
+        func text(_ stmt: OpaquePointer, _ col: Int32) -> String {
+            sqlite3_column_text(stmt, col).map { String(cString: $0) } ?? ""
+        }
+
+        // Folder tree, so each bookmark can show its path.
+        let rootNames = ["menu________": "Bookmarks Menu", "toolbar_____": "Bookmarks Toolbar",
+                         "unfiled_____": "Other Bookmarks", "mobile______": "Mobile Bookmarks"]
+        var folders: [Int64: (parent: Int64, title: String, guid: String)] = [:]
+        rows("SELECT id, parent, IFNULL(title, ''), guid FROM moz_bookmarks WHERE type = 2") { st in
+            folders[sqlite3_column_int64(st, 0)] =
+                (sqlite3_column_int64(st, 1), text(st, 2), text(st, 3))
+        }
+        func path(_ id: Int64) -> String? {  // nil = under the tags root, i.e. not a real bookmark
+            var parts: [String] = []
+            var cur = id
+            while let f = folders[cur], parts.count < 50 {
+                if f.guid == "tags________" { return nil }
+                if f.guid == "root________" { break }
+                parts.insert(rootNames[f.guid] ?? f.title, at: 0)
+                cur = f.parent
+            }
+            return parts.joined(separator: " › ")
+        }
+
+        rows("""
+            SELECT IFNULL(b.title, ''), p.url, b.parent FROM moz_bookmarks b
+            JOIN moz_places p ON p.id = b.fk
+            WHERE b.type = 1 AND p.url NOT LIKE 'place:%'
+            ORDER BY p.frecency DESC
+            """) { st in
+            guard let folder = path(sqlite3_column_int64(st, 2)) else { return }
+            let url = text(st, 1)
+            result.append(Bookmark(title: text(st, 0).isEmpty ? url : text(st, 0), url: url, folder: folder,
+                                   profile: names[dir.lastPathComponent] ?? dir.lastPathComponent))
+        }
+    }
+    return result
+}
+
+func bookmarks() {
+    let all = allBookmarks()
+    if all.isEmpty {
+        emit(["items": [["title": "No Firefox bookmarks found", "valid": false]]])
+        return
+    }
+    let multiProfile = Set(all.map(\.profile)).count > 1
+    var seen = Set<String>()
+    let items: [[String: Any]] = all.compactMap { b in
+        guard seen.insert(b.url).inserted else { return nil }
+        let host = URL(string: b.url)?.host ?? ""
+        let port = URL(string: b.url)?.port.map(String.init) ?? ""
+        var location = b.folder
+        if multiProfile { location = "\(b.profile) · " + location }
+        return [
+            "uid": b.url,
+            "title": b.title,
+            "subtitle": "\(location) · \(b.url)",
+            "arg": b.url,
+            "match": "\(b.title) \(b.url) \(host) \(port) \(b.folder)",
+            "autocomplete": b.title,
+            "quicklookurl": b.url,
+            "text": ["copy": b.url, "largetype": b.url],
+            "mods": ["cmd": ["subtitle": "Copy URL: \(b.url)", "arg": b.url]],
+        ]
+    }
+    emit(["items": items])
+}
+
 let args = CommandLine.arguments
 switch args.count > 1 ? args[1] : "" {
 case "list": list()
 case "focus" where args.count > 2: focus(args[2])
+case "bookmarks": bookmarks()
 case "urls":  // debugging: dump session URLs without needing Accessibility
     emit(sessionWindows().map { $0.map { ["title": $0.title, "url": $0.url] } })
 default:
-    FileHandle.standardError.write("usage: fftabs list | focus <arg> | urls\n".data(using: .utf8)!)
+    FileHandle.standardError.write("usage: fftabs list | focus <arg> | bookmarks | urls\n".data(using: .utf8)!)
     exit(2)
 }

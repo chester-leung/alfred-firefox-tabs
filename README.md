@@ -1,18 +1,22 @@
 # Firefox Tabs for Alfred
 
-Search your open Firefox tabs from Alfred and jump straight to one.
+Search your open Firefox tabs and bookmarks from Alfred.
 
-Open Alfred, type `t`, and every open tab is listed. Keep typing to filter by
-title, URL, host or port (`t gmail`, `t localhost:3000`, `t 3000`).
+- **`t`** lists every open tab. Pick one and Firefox comes to the front on that tab.
+- **`b`** lists every bookmark. Pick one and it opens in Firefox.
+
+Keep typing to filter by title, URL, host or port (`t gmail`, `t localhost:3000`,
+`t 3000`). Bookmarks can also be filtered by folder name (`b toolbar`).
 
 | Key | Action |
 | --- | --- |
-| ↩ | Switch to the tab and bring Firefox to the front |
-| ⌘↩ | Copy the tab's URL |
+| ↩ | `t`: switch to the tab · `b`: open the bookmark |
+| ⌘↩ | Copy the URL |
 | ⇧ / ⌘Y | Quick Look the page |
 
 Works with horizontal and vertical tabs, multiple windows, and multiple Firefox
-profiles running at once. No Firefox extension needed.
+profiles (bookmarks from every profile are included, labelled by profile). No
+Firefox extension needed.
 
 ## Requirements
 
@@ -52,15 +56,15 @@ double-click to import.
 
 ### Grant Accessibility permission
 
-The workflow reads and clicks Firefox's tabs through the macOS Accessibility
+Needed for `t` (bookmarks work without it). The workflow reads and clicks Firefox's tabs through the macOS Accessibility
 API, so Alfred needs that permission: **System Settings → Privacy & Security →
 Accessibility → enable Alfred**. If it's missing, typing `t` shows an item that
 opens that settings pane for you.
 
-### Changing the keyword
+### Changing the keywords
 
-`t` is the default. To change it, open the workflow in Alfred Preferences and
-double-click the Script Filter.
+To change `t` or `b`, open the workflow in Alfred Preferences and double-click
+the matching Script Filter.
 
 ## How it works
 
@@ -76,8 +80,12 @@ double-click the Script Filter.
   window and position.
 - **Switching:** it presses the tab's button, raises its window and activates
   Firefox.
+- **Bookmarks:** read from each profile's `places.sqlite`, most-used first, with
+  their folder path. Firefox keeps that database locked while running, so
+  `fftabs` queries a copy-on-write clone of it (and its WAL, so bookmarks added
+  seconds ago show up), then deletes the clone.
 
-Nothing leaves your machine: no network access, no extension, no data stored.
+Nothing leaves your machine: no network access, no extension, nothing kept on disk.
 
 ## Limitations
 
@@ -86,7 +94,8 @@ Nothing leaves your machine: no network access, no extension, no data stored.
   URL until the next save.
 - While a window is in fullscreen video, Firefox hides its tab strip, so that
   window's tabs don't appear.
-- Tabs inside a collapsed tab group may not be listed until the group is expanded.
+- With several profiles running, a bookmark opens in whichever Firefox instance
+  macOS routes the URL to, not necessarily the profile it came from.
 
 ## License
 
