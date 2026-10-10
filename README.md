@@ -2,6 +2,8 @@
 
 Search your open Firefox tabs and bookmarks from Alfred with one keyword.
 
+**[DOWNLOAD](https://github.com/chester-leung/alfred-firefox-tabs/releases/latest)** (then see [Install](#install) for the one-time quarantine step)
+
 Type **`ff`** and everything is listed: open tabs first, then bookmarks (marked
 ★). Keep typing to filter by title, URL, host, port or bookmark folder
 (`ff gmail`, `ff localhost:3000`, `ff 3000`, `ff toolbar`). Add `tab` or
